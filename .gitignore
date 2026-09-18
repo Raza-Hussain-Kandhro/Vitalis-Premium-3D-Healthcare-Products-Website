@@ -1,0 +1,14 @@
+node_modules
+dist
+dist-ssr
+.vercel
+.env
+.env.local
+.env.*.local
+db/migrations/meta/_journal.json.bak
+*.log
+.DS_Store
+.vscode/*
+!.vscode/extensions.json
+
+.vercel
