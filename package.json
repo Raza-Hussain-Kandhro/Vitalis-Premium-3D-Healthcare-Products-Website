@@ -3,7 +3,7 @@
   "private": true,
   "version": "2.0.0",
   "engines": {
-  "node": "20.x"
+  "node": "24.x"
   },
   "type": "module",
   "description": "Vitalis — premium 3D healthcare products website. Vite/React frontend + Vercel serverless Node.js API + PostgreSQL (Drizzle).",
