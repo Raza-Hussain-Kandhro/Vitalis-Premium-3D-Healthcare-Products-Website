@@ -1,110 +1,162 @@
-# Vitalis — Premium 3D Healthcare Products Website
+<div align="center">
 
-Full-stack project: **Vite + React frontend** and a **Node.js serverless API** in `/api`, backed by **PostgreSQL** (Neon or Supabase, pooled), deployed together on **Vercel**.
+# 🩺 Vitalis — Intelligent Healthcare Products
+
+**A premium, 3D-animated healthcare product showcase, booking, and admin platform.**
+
+![React](https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=white&labelColor=20232a)
+![Vite](https://img.shields.io/badge/Vite-Build-646CFF?logo=vite&logoColor=white&labelColor=20232a)
+![Three.js](https://img.shields.io/badge/Three.js-3D_Scene-000000?logo=three.js&logoColor=white)
+![Vercel](https://img.shields.io/badge/Vercel-Serverless-000000?logo=vercel&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Supabase-4169E1?logo=postgresql&logoColor=white)
+![License](https://img.shields.io/badge/status-active-success)
+
+</div>
 
 ---
 
-## 1. Folder structure
+## ✨ Overview
+
+Vitalis is a full-stack website for a healthcare equipment brand — a cinematic, scroll-driven 3D homepage, a product catalogue, a project gallery, appointment booking, a contact/enquiry system, an early-access waitlist, and a private admin dashboard to manage all of it.
+
+It's built as a **single deployable unit**: a React frontend and a set of Vercel serverless API functions, sharing one PostgreSQL database (hosted on Supabase).
+
+---
+
+## 🚀 Features
+
+### Public site
+
+- 🎬 **3D animated hero** built with Three.js / React Three Fiber, with scroll-linked narrative sections
+- 🛒 **Product catalogue** — searchable, filterable by category, with real images
+- 🖼️ **Gallery** — deployments, facilities, and product photography
+- 📩 **Contact form** — validated enquiries, stored and reviewable by staff
+- 📅 **Appointment booking** — consultation requests with preferred dates
+- 📬 **Waitlist capture** — early-access email signups from the homepage
+
+### Admin dashboard (`/admin`)
+
+- 🔐 **JWT-based staff/admin login**
+- 📊 **Enquiries, Appointments & Waitlist views** — with live status updates (mark enquiries/appointments as reviewed, responded, confirmed, etc.)
+- 🗂️ **Catalog manager** — add, edit, and delete products and gallery items directly from the browser, no database tool required
+
+---
+
+## 🧱 Tech Stack
+
+| Layer              | Technology                                             |
+| ------------------ | ------------------------------------------------------ |
+| **Frontend**       | React 18, Vite, React Router, Tailwind CSS             |
+| **3D / Animation** | Three.js, React Three Fiber, Drei, Framer Motion, GSAP |
+| **Backend**        | Vercel Serverless Functions (Node.js)                  |
+| **Database**       | PostgreSQL, hosted on Supabase                         |
+| **ORM**            | Drizzle ORM (+ raw SQL schema in `db/`)                |
+| **Validation**     | Zod                                                    |
+| **Auth**           | JWT (`jsonwebtoken`) + `bcryptjs` password hashing     |
+| **Icons**          | Lucide                                                 |
+| **Hosting**        | Vercel                                                 |
+
+---
+
+## 📁 Project Structure
 
 ```
 vitalis/
-├── api/                          # Vercel Serverless Functions (Node.js 20)
-│   ├── _lib/                     # shared code — underscore = NOT routable
-│   │   ├── db.js                 # pooled / HTTP Postgres client (Drizzle)
-│   │   ├── schema.js             # Drizzle schema (source of truth)
-│   │   ├── auth.js               # JWT sign/verify + bcrypt + ownership checks
-│   │   ├── http.js               # CORS, method guard, errors, body parsing
-│   │   └── validators.js         # Zod schemas (mirror client validation)
-│   ├── health.js                 # GET    /api/health
-│   ├── me.js                     # GET    /api/me
-│   ├── products/
-│   │   ├── index.js              # GET    /api/products
-│   │   └── [slug].js             # GET    /api/products/:slug
-│   ├── gallery/index.js          # GET    /api/gallery
-│   ├── enquiries/index.js        # POST   /api/enquiries   | GET (admin)
-│   ├── appointments/index.js     # POST   /api/appointments | GET (staff)
-│   ├── waitlist/index.js         # POST   /api/waitlist
-│   ├── auth/
-│   │   ├── register.js           # POST   /api/auth/register
-│   │   └── login.js              # POST   /api/auth/login
-│   └── records/
-│       ├── index.js              # GET/POST      /api/records
-│       └── [id].js               # PUT/DELETE    /api/records/:id
+├── api/                      # Vercel serverless functions (one file = one endpoint)
+│   ├── _lib/                 # Shared backend code (not routable)
+│   │   ├── db.js             # Pooled Postgres connection (Drizzle)
+│   │   ├── schema.js         # Drizzle schema — source of truth for tables
+│   │   ├── auth.js           # JWT signing/verification, password hashing, guards
+│   │   ├── http.js           # CORS, method guard, error envelope, body parsing
+│   │   └── validators.js     # Zod schemas for every endpoint
+│   ├── health.js             # GET  /api/health
+│   ├── me.js                 # GET  /api/me
+│   ├── auth.js               # POST /api/auth/login, /api/auth/register
+│   ├── products.js           # GET/POST/PUT/DELETE /api/products[/:slugOrId]
+│   ├── gallery.js            # GET/POST/PUT/DELETE /api/gallery[/:id]
+│   ├── enquiries.js          # GET/POST/PUT       /api/enquiries[/:id]
+│   ├── appointments.js       # GET/POST/PUT       /api/appointments[/:id]
+│   └── waitlist.js           # GET/POST           /api/waitlist
 ├── db/
-│   ├── schema.sql                # plain SQL schema (equivalent to Drizzle)
-│   ├── seed.sql                  # catalogue + gallery seed data
-│   └── migrations/               # drizzle-kit output
-├── scripts/seed.mjs              # node scripts/seed.mjs
-├── src/                          # frontend
-│   ├── pages/                    # Home, About, Products, Gallery, Contact, NotFound
-│   ├── components/canvas/        # Three.js / R3F scene (code-split)
-│   ├── components/ui/            # Navbar, Hero, Footer, PageHeader, cards…
-│   ├── services/api.js           # single REST client for /api
-│   ├── hooks/ lib/               # device tier, WebGL probe, scroll store
-│   ├── App.jsx  main.jsx  index.css
-├── drizzle.config.js
-├── vercel.json                   # SPA rewrites + function runtime/limits
-├── .env.example
-└── package.json
+│   ├── schema.sql            # Raw SQL schema (mirrors Drizzle schema)
+│   └── seed.sql              # Sample products & gallery data
+├── scripts/
+│   └── seed.mjs              # Applies schema.sql + seed.sql locally
+├── src/
+│   ├── pages/                 # Home, About, Products, Gallery, Contact,
+│   │                          # AdminLogin, AdminDashboard, AdminCatalog, NotFound
+│   ├── components/ui/        # Navbar, Hero, Showcase, CTA, shared UI bits
+│   ├── services/api.js       # Frontend fetch wrapper + typed API calls
+│   └── lib/constants.js      # Shared design/scene constants
+├── vercel.json                # Rewrites (nested API routes → flat functions), headers
+└── .env.example
 ```
 
-Why this shape works on Vercel: every file in `/api` becomes its own stateless function (no long-running Express server), folders starting with `_` are ignored by the router, and `vercel.json` rewrites all non-`/api` paths to `index.html` so React Router deep links (`/products`, `/contact`) work on refresh.
+> **Note on API routing:** to stay within Vercel's function-count limits, endpoints like `/api/products/:slug` and `/api/auth/login` are routed through `vercel.json` **rewrites** into flat handler files (e.g. `api/products.js`), which read the dynamic segment from a query parameter internally. The frontend is unaware of this — it calls the same clean URLs either way.
 
 ---
 
-## 2. Local setup
+## 🗄️ Database Schema
+
+| Table                | Purpose                                                                         |
+| -------------------- | ------------------------------------------------------------------------------- |
+| `users` / `profiles` | Accounts (roles: `user`, `staff`, `admin`)                                      |
+| `products`           | Catalogue items — category, price, images, specs                                |
+| `gallery_items`      | Portfolio/deployment photography                                                |
+| `enquiries`          | Contact form submissions (status: `new` → `in_review` → `responded` → `closed`) |
+| `appointments`       | Booking requests (status: `requested` → `confirmed` → `completed`/`cancelled`)  |
+| `waitlist`           | Early-access email signups                                                      |
+| `app_records`        | Reserved for future use (not currently wired to the UI)                         |
+
+---
+
+## ⚙️ Getting Started Locally
 
 ```bash
+# 1. Install dependencies
 npm install
-cp .env.example .env          # fill DATABASE_URL + JWT_SECRET
-npm run db:push               # or: psql "$DATABASE_URL_UNPOOLED" -f db/schema.sql
-npm run db:seed               # applies db/schema.sql + db/seed.sql
 
-npm run dev                   # frontend only (API calls fall back to sample data)
-npx vercel dev                # frontend + /api functions together
+# 2. Configure environment
+cp .env.example .env
+# then fill in DATABASE_URL, DATABASE_URL_UNPOOLED, JWT_SECRET, etc.
+
+# 3. Create tables + seed sample data
+npm run db:seed
+
+# 4. Run the API functions (terminal 1)
+vercel dev --listen 3001
+
+# 5. Run the frontend (terminal 2)
+npm run dev
 ```
 
-Generate a JWT secret: `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`
+Visit **http://localhost:5173**.
+
+### Environment variables
+
+| Variable                | Description                                                  |
+| ----------------------- | ------------------------------------------------------------ |
+| `VITE_API_URL`          | `/api` — same-origin API base path                           |
+| `DATABASE_URL`          | Pooled Postgres connection string (used at runtime)          |
+| `DATABASE_URL_UNPOOLED` | Direct connection string (used for local migrations/seeding) |
+| `JWT_SECRET`            | Secret used to sign login tokens                             |
+| `JWT_EXPIRES_IN`        | Token lifetime, e.g. `7d`                                    |
+| `ALLOWED_ORIGINS`       | Comma-separated CORS allow-list (blank = same-origin only)   |
+| `BLOB_READ_WRITE_TOKEN` | Optional — for future file upload support                    |
 
 ---
 
-## 3. API reference
+## ☁️ Deployment
 
-| Method | Endpoint | Access | Purpose |
-| --- | --- | --- | --- |
-| GET | `/api/health` | Public | Liveness + DB latency probe |
-| GET | `/api/products` | Public | Catalogue, `?category=&search=&limit=` |
-| GET | `/api/products/:slug` | Public | Single product |
-| GET | `/api/gallery` | Public | Gallery items, `?category=` |
-| POST | `/api/enquiries` | Public | Contact form (Zod validated) |
-| GET | `/api/enquiries` | Admin (JWT) | Enquiry inbox |
-| POST | `/api/appointments` | Public | Booking request |
-| GET | `/api/appointments` | Staff/Admin (JWT) | Upcoming bookings |
-| POST | `/api/waitlist` | Public | Early-access capture (upsert) |
-| POST | `/api/auth/register` | Public | Create user + profile, returns JWT |
-| POST | `/api/auth/login` | Public | Returns JWT |
-| GET | `/api/me` | JWT | Current user + profile |
-| GET/POST | `/api/records` | JWT | List/create owned records |
-| PUT/DELETE | `/api/records/:id` | Owner/Admin | Update, soft delete (`?hard=true`) |
-
-Response envelope: success `{ "data": ... }`, failure `{ "error": { code, message, fieldErrors? } }`.
+1. Push the repository to GitHub.
+2. Import the repo into [Vercel](https://vercel.com) (Framework: **Vite**, Build: `npm run build`, Output: `dist`).
+3. Add the environment variables above in the Vercel project settings.
+4. Deploy — Vercel builds the frontend and provisions each `api/*.js` file as a serverless function automatically.
 
 ---
 
-## 4. Deploy to Vercel
+## 👤 Author
 
-1. **Provision Postgres** — Neon or Supabase. Copy the **pooled** connection string (Neon `-pooler`, Supabase port `6543`) and the direct one for migrations.
-2. **Push to GitHub** — `git init && git add . && git commit -m "feat: full-stack Vitalis" && git push`.
-3. **Import on Vercel** — New Project → pick the repo. Framework preset **Vite**, build `npm run build`, output `dist` (already in `vercel.json`).
-4. **Add env vars** (Settings → Environment Variables, all three environments): `DATABASE_URL`, `JWT_SECRET`, optional `JWT_EXPIRES_IN`, `ALLOWED_ORIGINS`, `VITE_API_URL=/api`.
-5. **Apply the schema** — run `db/schema.sql` + `db/seed.sql` in your provider's SQL editor, or locally `npm run db:push && npm run db:seed`.
-6. **Deploy**, then verify: `curl https://<app>.vercel.app/api/health` → `database: "connected"`; submit the contact form and confirm a row in `enquiries`.
-7. **Custom domain** (optional) — add it in Settings → Domains; add it to `ALLOWED_ORIGINS` if you also call the API from another origin.
-
-### Constraint checklist
-
-- Serverless functions only (no Express server) — `nodejs20.x`, `maxDuration: 10`.
-- Stateless: no filesystem writes; images/uploads use `image_url`/`avatar_url` pointing at Vercel Blob or S3.
-- Pooling: Neon HTTP driver, or `pg.Pool({ max: 1 })` cached on `globalThis` against a PgBouncer endpoint.
-- Secrets only via `process.env`; nothing sensitive is prefixed `VITE_`.
-- CORS handled centrally in `api/_lib/http.js` (same-origin by default, allow-list for extras).
+**Raza Hussain**
+BS Computer Science, Final Year — DHA Suffa University
+SafeX SDC Internship

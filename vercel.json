@@ -9,6 +9,11 @@
     }
   },
   "rewrites": [
+    { "source": "/api/auth/:action", "destination": "/api/auth?action=:action" },
+    { "source": "/api/products/:slug", "destination": "/api/products?slug=:slug" },
+    { "source": "/api/gallery/:id", "destination": "/api/gallery?id=:id" },
+    { "source": "/api/enquiries/:id", "destination": "/api/enquiries?id=:id" },
+    { "source": "/api/appointments/:id", "destination": "/api/appointments?id=:id" },
     { "source": "/((?!api/).*)", "destination": "/index.html" }
   ],
   "headers": [

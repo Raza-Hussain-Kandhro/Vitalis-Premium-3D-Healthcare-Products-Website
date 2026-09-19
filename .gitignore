@@ -12,3 +12,4 @@ db/migrations/meta/_journal.json.bak
 !.vscode/extensions.json
 
 .vercel
+.env*
