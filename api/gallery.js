@@ -3,21 +3,20 @@
  * POST   /api/gallery — create a gallery item (admin only).
  * PUT    /api/gallery/:id — update a gallery item (admin only).
  * DELETE /api/gallery/:id — delete a gallery item (admin only).
- * (Combined into one file via a catch-all route to stay under Vercel's function limit.)
+ * A vercel.json rewrite sends /api/gallery/:id here as ?id=.
  */
 
 import { asc, eq } from 'drizzle-orm'
-import { requireDb } from '../_lib/db.js'
-import { galleryItems } from '../_lib/schema.js'
-import { HttpError, handler, ok, parseWith, readBody } from '../_lib/http.js'
-import { galleryQuerySchema, galleryCreateSchema, galleryUpdateSchema } from '../_lib/validators.js'
-import { requireAuth } from '../_lib/auth.js'
+import { requireDb } from './_lib/db.js'
+import { galleryItems } from './_lib/schema.js'
+import { HttpError, handler, ok, parseWith, readBody } from './_lib/http.js'
+import { galleryQuerySchema, galleryCreateSchema, galleryUpdateSchema } from './_lib/validators.js'
+import { requireAuth } from './_lib/auth.js'
 
 export default handler(['GET', 'POST', 'PUT', 'PATCH', 'DELETE'], async (req, res) => {
-  const [id] = req.query.params ?? []
+  const { id } = req.query
   const db = requireDb()
 
-  // ---- Collection level: /api/gallery ----
   if (!id) {
     if (req.method === 'POST') {
       const actor = requireAuth(req)
@@ -39,7 +38,6 @@ export default handler(['GET', 'POST', 'PUT', 'PATCH', 'DELETE'], async (req, re
     return ok(res, rows)
   }
 
-  // ---- Item level: /api/gallery/:id — admin only ----
   const actor = requireAuth(req)
   if (actor.role !== 'admin') throw new HttpError(403, 'forbidden', 'Admin access required.')
 

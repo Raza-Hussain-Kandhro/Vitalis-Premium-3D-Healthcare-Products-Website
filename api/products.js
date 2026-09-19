@@ -1,21 +1,21 @@
 /**
  * GET    /api/products?category=&search=&limit= — public catalogue listing.
- * GET    /api/products/:slug — single product detail (public, lookup by slug).
+ * GET    /api/products/:slug — single product detail (public).
  * POST   /api/products — create a product (admin only).
- * PUT    /api/products/:id — update a product (admin only, lookup by id).
- * DELETE /api/products/:id — delete a product (admin only, lookup by id).
- * (Combined into one file via a catch-all route to stay under Vercel's function limit.)
+ * PUT    /api/products/:id — update a product (admin only).
+ * DELETE /api/products/:id — delete a product (admin only).
+ * A vercel.json rewrite sends /api/products/:slug here as ?slug=.
  */
 
 import { and, asc, ilike, or, eq } from 'drizzle-orm'
-import { requireDb } from '../_lib/db.js'
-import { products } from '../_lib/schema.js'
-import { HttpError, handler, ok, parseWith, readBody } from '../_lib/http.js'
-import { productQuerySchema, productCreateSchema, productUpdateSchema } from '../_lib/validators.js'
-import { requireAuth } from '../_lib/auth.js'
+import { requireDb } from './_lib/db.js'
+import { products } from './_lib/schema.js'
+import { HttpError, handler, ok, parseWith, readBody } from './_lib/http.js'
+import { productQuerySchema, productCreateSchema, productUpdateSchema } from './_lib/validators.js'
+import { requireAuth } from './_lib/auth.js'
 
 export default handler(['GET', 'POST', 'PUT', 'PATCH', 'DELETE'], async (req, res) => {
-  const [param] = req.query.params ?? []
+  const { slug: param } = req.query
   const db = requireDb()
 
   // ---- Collection level: /api/products ----
@@ -54,7 +54,6 @@ export default handler(['GET', 'POST', 'PUT', 'PATCH', 'DELETE'], async (req, re
     return ok(res, product)
   }
 
-  // PUT / DELETE — admin only, identified by id.
   const actor = requireAuth(req)
   if (actor.role !== 'admin') throw new HttpError(403, 'forbidden', 'Admin access required.')
 

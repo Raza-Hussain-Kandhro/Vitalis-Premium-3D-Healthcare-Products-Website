@@ -1,15 +1,15 @@
 /**
  * POST /api/auth/login    — verify credentials, return JWT.
  * POST /api/auth/register — create user + profile, return JWT.
- * (Combined into one file via a catch-all route to stay under Vercel's function limit.)
+ * A vercel.json rewrite sends both URLs here, with the action in ?action=.
  */
 
 import { eq } from 'drizzle-orm'
-import { requireDb } from '../_lib/db.js'
-import { profiles, users } from '../_lib/schema.js'
-import { HttpError, handler, ok, parseWith, readBody } from '../_lib/http.js'
-import { loginSchema, registerSchema } from '../_lib/validators.js'
-import { hashPassword, signToken, verifyPassword } from '../_lib/auth.js'
+import { requireDb } from './_lib/db.js'
+import { profiles, users } from './_lib/schema.js'
+import { HttpError, handler, ok, parseWith, readBody } from './_lib/http.js'
+import { loginSchema, registerSchema } from './_lib/validators.js'
+import { hashPassword, signToken, verifyPassword } from './_lib/auth.js'
 
 async function login(req, res, db) {
   const { email, password } = parseWith(loginSchema, readBody(req))
@@ -49,7 +49,7 @@ async function register(req, res, db) {
 }
 
 export default handler(['POST'], async (req, res) => {
-  const [action] = req.query.params ?? []
+  const { action } = req.query
   const db = requireDb()
 
   if (action === 'login') return login(req, res, db)

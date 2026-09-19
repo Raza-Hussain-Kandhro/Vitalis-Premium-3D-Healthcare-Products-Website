@@ -1,22 +1,21 @@
 /**
  * POST /api/appointments — booking request (public, validated).
- * GET  /api/appointments — admin/staff schedule listing (JWT Bearer).
+ * GET  /api/appointments — admin/staff schedule listing.
  * PUT  /api/appointments/:id — update status (admin/staff only).
- * (Combined into one file via a catch-all route to stay under Vercel's function limit.)
+ * A vercel.json rewrite sends /api/appointments/:id here as ?id=.
  */
 
 import { asc, eq } from 'drizzle-orm'
-import { requireDb } from '../_lib/db.js'
-import { appointments } from '../_lib/schema.js'
-import { HttpError, handler, ok, parseWith, readBody } from '../_lib/http.js'
-import { appointmentSchema, appointmentStatusSchema } from '../_lib/validators.js'
-import { requireAuth } from '../_lib/auth.js'
+import { requireDb } from './_lib/db.js'
+import { appointments } from './_lib/schema.js'
+import { HttpError, handler, ok, parseWith, readBody } from './_lib/http.js'
+import { appointmentSchema, appointmentStatusSchema } from './_lib/validators.js'
+import { requireAuth } from './_lib/auth.js'
 
 export default handler(['GET', 'POST', 'PUT', 'PATCH'], async (req, res) => {
-  const [id] = req.query.params ?? []
+  const { id } = req.query
   const db = requireDb()
 
-  // ---- Item level: /api/appointments/:id — admin/staff only ----
   if (id) {
     const actor = requireAuth(req)
     if (!['admin', 'staff'].includes(actor.role)) {
@@ -31,7 +30,6 @@ export default handler(['GET', 'POST', 'PUT', 'PATCH'], async (req, res) => {
     return ok(res, updated)
   }
 
-  // ---- Collection level: /api/appointments ----
   if (req.method === 'GET') {
     const actor = requireAuth(req)
     if (!['admin', 'staff'].includes(actor.role)) {

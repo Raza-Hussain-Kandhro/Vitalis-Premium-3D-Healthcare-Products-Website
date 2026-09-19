@@ -1,22 +1,21 @@
 /**
- * POST /api/enquiries — contact form submission (public, validated server-side).
- * GET  /api/enquiries — admin-only inbox listing (JWT Bearer, role=admin).
+ * POST /api/enquiries — contact form submission (public, validated).
+ * GET  /api/enquiries — admin-only inbox listing.
  * PUT  /api/enquiries/:id — update status (admin only).
- * (Combined into one file via a catch-all route to stay under Vercel's function limit.)
+ * A vercel.json rewrite sends /api/enquiries/:id here as ?id=.
  */
 
 import { desc, eq } from 'drizzle-orm'
-import { requireDb } from '../_lib/db.js'
-import { enquiries } from '../_lib/schema.js'
-import { HttpError, clientIp, handler, ok, parseWith, readBody } from '../_lib/http.js'
-import { enquirySchema, enquiryStatusSchema } from '../_lib/validators.js'
-import { requireAuth } from '../_lib/auth.js'
+import { requireDb } from './_lib/db.js'
+import { enquiries } from './_lib/schema.js'
+import { HttpError, clientIp, handler, ok, parseWith, readBody } from './_lib/http.js'
+import { enquirySchema, enquiryStatusSchema } from './_lib/validators.js'
+import { requireAuth } from './_lib/auth.js'
 
 export default handler(['GET', 'POST', 'PUT', 'PATCH'], async (req, res) => {
-  const [id] = req.query.params ?? []
+  const { id } = req.query
   const db = requireDb()
 
-  // ---- Item level: /api/enquiries/:id — admin only ----
   if (id) {
     const actor = requireAuth(req)
     if (actor.role !== 'admin') throw new HttpError(403, 'forbidden', 'Admin access required.')
@@ -29,7 +28,6 @@ export default handler(['GET', 'POST', 'PUT', 'PATCH'], async (req, res) => {
     return ok(res, updated)
   }
 
-  // ---- Collection level: /api/enquiries ----
   if (req.method === 'GET') {
     const actor = requireAuth(req)
     if (actor.role !== 'admin') throw new HttpError(403, 'forbidden', 'Admin access required.')

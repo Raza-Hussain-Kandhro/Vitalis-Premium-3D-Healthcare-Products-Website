@@ -1,14 +1,14 @@
 /**
  * POST /api/waitlist — early-access email capture (idempotent on email).
- * GET  /api/waitlist  — admin-only signup listing (JWT Bearer, role=admin).
+ * GET  /api/waitlist  — admin-only signup listing.
  */
 
 import { desc } from 'drizzle-orm'
-import { requireDb } from '../_lib/db.js'
-import { waitlist } from '../_lib/schema.js'
-import { HttpError, handler, ok, parseWith, readBody } from '../_lib/http.js'
-import { waitlistSchema } from '../_lib/validators.js'
-import { requireAuth } from '../_lib/auth.js'
+import { requireDb } from './_lib/db.js'
+import { waitlist } from './_lib/schema.js'
+import { HttpError, handler, ok, parseWith, readBody } from './_lib/http.js'
+import { waitlistSchema } from './_lib/validators.js'
+import { requireAuth } from './_lib/auth.js'
 
 export default handler(['GET', 'POST'], async (req, res) => {
   const db = requireDb()
